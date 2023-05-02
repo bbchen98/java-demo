@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spdb.mapper.UserMapper">
+
+    <resultMap id="userVo" type="com.spdb.vo.UserVo">
+        <result property="userId" column="user_id"/>
+        <result property="identity" column="description"/>
+    </resultMap>
+
+    <resultMap id="user" type="com.spdb.pojo.User">
+        <result property="userId" column="user_id"/>
+    </resultMap>
+
+    <select id="getUserNameById" resultType="String">
+        SELECT nickname
+        FROM rms_db.user
+        WHERE user_id = #{userId} and is_valid=1;
+    </select>
+
+    <select id="getUserById" parameterType="Long" resultMap="user">
+        SELECT *
+        FROM rms_db.user
+        WHERE user_id=#{id} and is_valid=1;
+    </select>
+
+    <select id="getAllUsers" resultMap="userVo">
+        SELECT user_id, username, nickname, password, description
+        FROM rms_db.user as u,rms_db.identity as i
+        WHERE u.identity=i.ident_id and u.is_valid=1;
+    </select>
+
+    <select id="getUserByUsername" resultMap="user">
+        SELECT *
+        FROM rms_db.user
+        WHERE username=#{username} and is_valid=1;
+    </select>
+
+    <insert id="addUser" parameterType="com.spdb.pojo.User">
+        INSERT INTO rms_db.user (user_id, username, nickname, password, identity)
+        VALUES (#{userId}, #{username}, #{nickname}, #{password}, #{identity });
+
+    </insert>
+
+    <update id="updateUser" parameterType="com.spdb.pojo.User">
+        UPDATE rms_db.user
+        SET username=#{username}, nickname=#{nickname}, password=#{password}, identity=#{identity}
+        WHERE user_id=#{userId}
+    </update>
+
+    <update id="deleteUser" parameterType="Long">
+        UPDATE rms_db.user
+        SET is_valid=0
+        WHERE user_id=#{userId}
+    </update>
+
+</mapper>

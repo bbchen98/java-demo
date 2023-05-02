@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spdb.mapper.AccountMapper">
+
+    <resultMap id="accountVo" type="com.spdb.vo.AccountVo">
+        <result property="accId" column="acc_id"/>
+        <result property="owner" column="nickname"/>
+    </resultMap>
+
+    <resultMap id="account" type="com.spdb.pojo.Account">
+        <result property="accId" column="acc_id"/>
+        <result property="ownerId" column="owner_id"/>
+    </resultMap>
+
+    <select id="getAllAccounts" resultMap="accountVo">
+        SELECT acc_id, desp, a.username, a.password, nickname
+        FROM rms_db.account as a, rms_db.user as u
+        WHERE a.owner_id=u.user_id and a.is_valid=1;
+    </select>
+
+    <select id="getAccountById" resultMap="account">
+        SELECT *
+        FROM rms_db.account
+        WHERE acc_id=#{id} and is_valid=1;
+    </select>
+
+    <select id="getOwnedAndSharedAccount" resultMap="accountVo">
+        SELECT acc_id, desp, a.username, a.password, nickname
+        FROM rms_db.account as a, rms_db.user as u
+        WHERE a.owner_id=u.user_id and a.is_valid=1 and u.user_id=#{userId}
+        UNION
+        SELECT a2.acc_id, a2.desp, a2.username, a2.password, u2.nickname
+        FROM rms_db.share as s, rms_db.account as a2, rms_db.user as u2
+        WHERE s.to_who=#{userId} and s.state='已同意' and s.acc_id = a2.acc_id and a2.owner_id=u2.user_id;
+    </select>
+
+    <insert id="addAccount" parameterType="com.spdb.pojo.Account">
+        INSERT INTO rms_db.account (acc_id, desp, username, password, owner_id)
+        VALUE (#{accId}, #{desp}, #{username}, #{password}, #{ownerId})
+    </insert>
+
+    <update id="updateAccount" parameterType="com.spdb.pojo.Account">
+        UPDATE rms_db.account
+        SET desp=#{desp}, username=#{username}, password=#{password}
+        WHERE acc_id=#{accId}
+    </update>
+
+    <update id="deleteAccount" parameterType="Long">
+        UPDATE rms_db.account
+        SET is_valid=0
+        WHERE acc_id=#{id}
+    </update>
+
+</mapper>
